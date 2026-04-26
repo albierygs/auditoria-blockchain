@@ -53,7 +53,7 @@ export default function OrganizationProfile() {
           `${API_BASE_URL}/members/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          },
+          }
         );
 
         if (!memberResponse.ok)
@@ -70,7 +70,7 @@ export default function OrganizationProfile() {
           `${API_BASE_URL}/organizations/${orgId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          },
+          }
         );
 
         if (!orgResponse.ok)
@@ -125,7 +125,7 @@ export default function OrganizationProfile() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -143,7 +143,7 @@ export default function OrganizationProfile() {
   // --- 4. Excluir Organização (DELETE) ---
   const handleDelete = async () => {
     const confirmText = prompt(
-      "Tem certeza? Isso inativará a organização e todos os membros perderão acesso. Digite o nome da organização para confirmar:",
+      "Tem certeza? Isso inativará a organização e todos os membros perderão acesso. Digite o nome da organização para confirmar:"
     );
 
     if (confirmText !== formData.name) {
@@ -158,7 +158,7 @@ export default function OrganizationProfile() {
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
 
       if (!response.ok) throw new Error("Erro ao excluir organização.");

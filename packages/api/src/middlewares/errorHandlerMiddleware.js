@@ -18,7 +18,7 @@ const errorHandler = (error, req, res, _next) => {
       dateTime: new Date().toLocaleString(),
       ip: req.ip,
     });
-  } else if (error instanceof Error) {
+  } else if (error instanceof Error || error) {
     console.error(error);
     res.status(500).json({
       error: "Internal server error",

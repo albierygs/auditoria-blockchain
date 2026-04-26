@@ -55,7 +55,7 @@ const AllocationsManager = () => {
         // 1. Obter ID da Organização do Membro
         const memberResponse = await fetch(
           `${API_BASE_URL}/members/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!memberResponse.ok)
@@ -80,7 +80,7 @@ const AllocationsManager = () => {
       } catch (err) {
         console.error("Erro ao carregar dados iniciais:", err);
         setError(
-          err.message || "Erro desconhecido ao carregar dados iniciais.",
+          err.message || "Erro desconhecido ao carregar dados iniciais."
         );
       } finally {
         setLoading(false);
@@ -94,7 +94,7 @@ const AllocationsManager = () => {
   const fetchProjects = async (orgId) => {
     const projectsResponse = await fetch(
       `${API_BASE_URL}/organizations/${orgId}/projects`,
-      { headers: { Authorization: `Bearer ${token}` } },
+      { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!projectsResponse.ok) console.error("Falha ao carregar projetos.");
     const projectsData = await projectsResponse.json();
@@ -104,7 +104,7 @@ const AllocationsManager = () => {
   const fetchDonations = async (orgId) => {
     const donationsResponse = await fetch(
       `${API_BASE_URL}/donations?organizationId=${orgId}&status=CONFIRMED`,
-      { headers: { Authorization: `Bearer ${token}` } },
+      { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!donationsResponse.ok) console.error("Falha ao carregar doações.");
     const donationsData = await donationsResponse.json();
@@ -114,7 +114,7 @@ const AllocationsManager = () => {
   const fetchAllocations = async (orgId) => {
     const allocationsResponse = await fetch(
       `${API_BASE_URL}/allocations?organizationId=${orgId}`,
-      { headers: { Authorization: `Bearer ${token}` } },
+      { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!allocationsResponse.ok) console.error("Falha ao carregar alocações.");
     const allocationsData = await allocationsResponse.json();

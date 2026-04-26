@@ -30,7 +30,7 @@ export default function ChangePassword() {
         alert("Senha alterada com sucesso!");
       } else {
         alert(
-          "Erro ao alterar senha: " + (data.message || "Erro desconhecido."),
+          "Erro ao alterar senha: " + (data.message || "Erro desconhecido.")
         );
       }
     } finally {

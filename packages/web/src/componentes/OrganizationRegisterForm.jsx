@@ -91,7 +91,7 @@ const OrganizationRegisterForm = () => {
       }
 
       alert(
-        "Cadastro enviado com sucesso! Aguarde a aprovação do Administrador do Sistema.",
+        "Cadastro enviado com sucesso! Aguarde a aprovação do Administrador do Sistema."
       );
       navigate("/");
     } catch (error) {

@@ -56,7 +56,7 @@ const AuditoriaBlockchain = () => {
     if (filters.network) {
       // Filtragem parcial por rede, insensível a maiúsculas/minúsculas
       filtered = filtered.filter((t) =>
-        t.network.toLowerCase().includes(filters.network.toLowerCase()),
+        t.network.toLowerCase().includes(filters.network.toLowerCase())
       );
     }
 
@@ -274,7 +274,7 @@ const AuditoriaBlockchain = () => {
                       <td className="py-2 px-3">
                         <span
                           className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusColor(
-                            t.status,
+                            t.status
                           )}`}
                         >
                           {t.status}

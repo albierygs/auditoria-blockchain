@@ -75,7 +75,7 @@ const PerfilUsuario = () => {
         // Admin do sistema não possui endpoint de perfil público no backend atual.
         // Tratamento especial: Mostra dados limitados ou estáticos se não houver endpoint.
         throw new Error(
-          "Perfil de Administrador do Sistema não possui visualização de detalhes neste momento.",
+          "Perfil de Administrador do Sistema não possui visualização de detalhes neste momento."
         );
       }
 
@@ -112,14 +112,14 @@ const PerfilUsuario = () => {
             ? allDonations.filter(
                 (d) =>
                   d.donor?.person?.public_id === userId &&
-                  d.status === "CONFIRMED",
+                  d.status === "CONFIRMED"
               )
             : [];
 
           setStats({
             totalDonated: myDonations.reduce(
               (sum, d) => sum + parseFloat(d.value),
-              0,
+              0
             ),
             totalDonations: myDonations.length,
             memberSince: new Date(data.created_at).getFullYear(),
@@ -188,7 +188,7 @@ const PerfilUsuario = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!response.ok) {

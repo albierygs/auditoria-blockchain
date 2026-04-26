@@ -74,7 +74,7 @@ const DashboardDoador = () => {
             console.error("Erro ao buscar dados do doador:", error);
             // Opcional: Tratar o erro (ex: alert, logout)
             alert(
-              "Não foi possível carregar o perfil. Por favor, tente novamente.",
+              "Não foi possível carregar o perfil. Por favor, tente novamente."
             );
             // navigate("/login"); // Você pode optar por deslogar em caso de erro grave
           }

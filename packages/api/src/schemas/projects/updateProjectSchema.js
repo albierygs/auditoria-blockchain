@@ -19,7 +19,7 @@ const updateProjectSchema = baseProjectSchema
     {
       message: "End date must be after start date",
       path: ["end_date"],
-    },
+    }
   );
 
 module.exports = updateProjectSchema;

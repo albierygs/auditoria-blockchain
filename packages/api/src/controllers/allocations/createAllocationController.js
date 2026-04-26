@@ -121,19 +121,16 @@ const createAllocation = async (req, res) => {
     );
 
     // Atualizar collected_amount do projeto
-    const updatedProject = await ProjectService.updateCollectedAmount(
-      project_id
-    );
+    const updatedProject =
+      await ProjectService.updateCollectedAmount(project_id);
 
     // Obter informações de alocação atualizada
-    const allocationInfo = await AllocationService.getAllocationInfo(
-      donation_id
-    );
+    const allocationInfo =
+      await AllocationService.getAllocationInfo(donation_id);
 
     // Obter informações de coleta do projeto
-    const projectCollectionInfo = await ProjectService.getCollectionInfo(
-      project_id
-    );
+    const projectCollectionInfo =
+      await ProjectService.getCollectionInfo(project_id);
 
     // Retornar a alocação com os dados da transação blockchain
     const allocationWithBlockchain = {
@@ -169,15 +166,12 @@ const createAllocation = async (req, res) => {
     console.error("Erro ao registrar transação blockchain:", blockchainError);
 
     // Atualizar collected_amount do projeto mesmo com erro no blockchain
-    const updatedProject = await ProjectService.updateCollectedAmount(
-      project_id
-    );
-    const allocationInfo = await AllocationService.getAllocationInfo(
-      donation_id
-    );
-    const projectCollectionInfo = await ProjectService.getCollectionInfo(
-      project_id
-    );
+    const updatedProject =
+      await ProjectService.updateCollectedAmount(project_id);
+    const allocationInfo =
+      await AllocationService.getAllocationInfo(donation_id);
+    const projectCollectionInfo =
+      await ProjectService.getCollectionInfo(project_id);
 
     const allocationWithError = {
       ...newAllocation,

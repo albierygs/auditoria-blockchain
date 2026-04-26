@@ -41,7 +41,7 @@ export default function VoluntariadoDashboard() {
 
         const memberResponse = await fetch(
           `${API_BASE_URL}/members/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!memberResponse.ok)
@@ -72,13 +72,13 @@ export default function VoluntariadoDashboard() {
     try {
       const response = await fetch(
         `${API_BASE_URL}/organizations/${orgId}/volunteer-logs`,
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || "Falha ao carregar logs de voluntariado.",
+          errorData.message || "Falha ao carregar logs de voluntariado."
         );
       }
 
@@ -99,7 +99,7 @@ export default function VoluntariadoDashboard() {
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
 
       if (!response.ok) throw new Error("Erro ao aprovar horas.");
@@ -125,7 +125,7 @@ export default function VoluntariadoDashboard() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ reason }),
-        },
+        }
       );
 
       if (!response.ok) throw new Error("Erro ao rejeitar horas.");
@@ -281,7 +281,7 @@ export default function VoluntariadoDashboard() {
                                 onClick={() =>
                                   handleApprove(
                                     log.volunteer.public_id,
-                                    log.public_id,
+                                    log.public_id
                                   )
                                 }
                                 className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition"
@@ -293,7 +293,7 @@ export default function VoluntariadoDashboard() {
                                 onClick={() =>
                                   handleReject(
                                     log.volunteer.public_id,
-                                    log.public_id,
+                                    log.public_id
                                   )
                                 }
                                 className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition"

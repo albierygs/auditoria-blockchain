@@ -41,7 +41,7 @@ export default function AdminMembersManager() {
           `${API_BASE_URL}/organizations/${selectedOrgId}/members`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          },
+          }
         );
 
         if (response.ok) {

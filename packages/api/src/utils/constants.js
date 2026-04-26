@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const PORT = Number(process.env.PORT);
+const DATABASE_URL = String(process.env.DATABASE_URL);
 
 const SALT_BCRYPT = Number(process.env.SALT_BCRYPT);
 
@@ -23,8 +24,11 @@ const FRONTEND_URL =
     ? process.env.FRONTEND_URL
     : process.env.FRONTEND_URL_DEV;
 
+const MERCADO_PAGO_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACESS_TOKEN;
+
 module.exports = {
   PORT,
+  DATABASE_URL,
   SALT_BCRYPT,
   SECRET_KET_JWT,
   ADMIN_EMAIL,
@@ -36,4 +40,5 @@ module.exports = {
   EMAIL_PASSWORD,
   EMAIL_USER,
   FRONTEND_URL,
+  MERCADO_PAGO_ACCESS_TOKEN,
 };

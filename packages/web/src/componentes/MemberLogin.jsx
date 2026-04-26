@@ -27,7 +27,7 @@ const MemberLogin = () => {
         // Assume que o back-end retorna a role principal no campo 'type'
         if (data.type && data.type !== "ORG_MEMBER") {
           alert(
-            "Acesso negado: Somente membros da organização podem acessar esta área.",
+            "Acesso negado: Somente membros da organização podem acessar esta área."
           );
           return;
         }

@@ -62,7 +62,7 @@ const ExpensesManager = () => {
         // 1. Obter ID da Organização do Membro
         const memberResponse = await fetch(
           `${API_BASE_URL}/members/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!memberResponse.ok)
@@ -78,7 +78,7 @@ const ExpensesManager = () => {
         // 2. Carregar Projetos da Organização
         const projectsResponse = await fetch(
           `${API_BASE_URL}/organizations/${organizationId}/projects`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!projectsResponse.ok)
@@ -96,7 +96,7 @@ const ExpensesManager = () => {
       } catch (err) {
         console.error("Erro ao carregar dados iniciais:", err);
         setError(
-          err.message || "Erro desconhecido ao carregar dados iniciais.",
+          err.message || "Erro desconhecido ao carregar dados iniciais."
         );
       } finally {
         setLoading(false);
@@ -117,7 +117,7 @@ const ExpensesManager = () => {
     try {
       const res = await fetch(
         `${API_BASE_URL}/projects/${projectId}/expenses`,
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (!res.ok) {
@@ -172,7 +172,7 @@ const ExpensesManager = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!res.ok) {

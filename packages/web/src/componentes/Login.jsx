@@ -27,7 +27,7 @@ const Login = () => {
         // O usuário solicitou a verificação do campo 'type' na resposta.
         if (data.type && data.type !== "DONOR") {
           alert(
-            "Acesso negado: Somente doadores podem acessar esta interface.",
+            "Acesso negado: Somente doadores podem acessar esta interface."
           );
           // Não armazena o token e impede a navegação
           return;

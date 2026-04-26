@@ -47,7 +47,7 @@ const ApproveOrganizations = () => {
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
 
       if (!response.ok) {

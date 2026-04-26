@@ -23,7 +23,7 @@ const ForgotPassword = () => {
       const data = await response.json();
 
       alert(
-        data.message || "Se o email existir, enviaremos o link de recuperação.",
+        data.message || "Se o email existir, enviaremos o link de recuperação."
       );
       navigate("/login");
     } catch (error) {

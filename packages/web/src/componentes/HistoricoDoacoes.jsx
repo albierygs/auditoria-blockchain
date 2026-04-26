@@ -28,7 +28,7 @@ export default function HistoricoDoacoes() {
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error(
-          "Token de autenticação não encontrado. Faça login novamente.",
+          "Token de autenticação não encontrado. Faça login novamente."
         );
       }
 
@@ -44,7 +44,7 @@ export default function HistoricoDoacoes() {
         const errorData = await response.json();
         throw new Error(
           errorData.message ||
-            `Falha ao carregar as doações (Status: ${response.status})`,
+            `Falha ao carregar as doações (Status: ${response.status})`
         );
       }
 

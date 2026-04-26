@@ -98,4 +98,3 @@ volumes:
 networks:
   blockchain-network:
     driver: bridge
-    // Configurações adicionais de rede podem ser adicionadas aqui, se necessário

@@ -34,7 +34,7 @@ const createProjectSchema = baseProjectSchema.refine(
   {
     message: "End date must be after start date",
     path: ["end_date"],
-  },
+  }
 );
 
 module.exports = { createProjectSchema, baseProjectSchema };

@@ -33,7 +33,7 @@ const AdminLogin = () => {
         // --- VERIFICAÇÃO ESTRITA DE ADMIN ---
         if (data.type !== "ADMIN") {
           alert(
-            "Acesso Negado: Esta área é restrita a Administradores do Sistema.",
+            "Acesso Negado: Esta área é restrita a Administradores do Sistema."
           );
           return;
         }

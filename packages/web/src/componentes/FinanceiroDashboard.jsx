@@ -57,7 +57,7 @@ export default function FinanceiroDashboard() {
         // 1. Obter ID da Organização do Membro
         const memberResponse = await fetch(
           `${API_BASE_URL}/members/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!memberResponse.ok)
@@ -83,7 +83,7 @@ export default function FinanceiroDashboard() {
         ]);
 
         const donationsDataFiltred = donationsData.filter(
-          (d) => d.organization_id === organizationId,
+          (d) => d.organization_id === organizationId
         );
 
         // 2. Cálculo de Receita (Total Arrecadado)
@@ -92,7 +92,7 @@ export default function FinanceiroDashboard() {
           totalArrecadado = donationsDataFiltred.reduce(
             (sum, d) =>
               d.status === "CONFIRMED" ? sum + parseFloat(d.value) : sum,
-            0,
+            0
           );
         }
 
@@ -107,7 +107,7 @@ export default function FinanceiroDashboard() {
               headers: { Authorization: `Bearer ${token}` },
             })
               .then((res) => (res.ok ? res.json() : []))
-              .catch(() => []),
+              .catch(() => [])
           );
 
           const allExpensesArrays = await Promise.all(expensePromises);

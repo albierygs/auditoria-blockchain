@@ -57,7 +57,7 @@ export default function ProjetoForm() {
         if (userRole !== "ORG_ADMIN") {
           if (isNewProject) {
             alert(
-              "Acesso negado: Apenas administradores podem criar projetos.",
+              "Acesso negado: Apenas administradores podem criar projetos."
             );
             navigate("/projetos");
             return;

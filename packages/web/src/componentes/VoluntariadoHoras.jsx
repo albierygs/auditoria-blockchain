@@ -49,7 +49,7 @@ export default function VoluntariadoHoras() {
         // 1. Obter ID da Organização do Membro (para buscar projetos)
         const memberResponse = await fetch(
           `${API_BASE_URL}/members/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!memberResponse.ok)
@@ -63,14 +63,14 @@ export default function VoluntariadoHoras() {
         // 2. Carregar Projetos da Organização
         const projectsResponse = await fetch(
           `${API_BASE_URL}/organizations/${orgId}/projects`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!projectsResponse.ok) console.warn("Falha ao carregar projetos.");
         const projectsData = await projectsResponse.json();
         setProjects(
           Array.isArray(projectsData)
             ? projectsData.filter((p) => p.status === "ACTIVE")
-            : [],
+            : []
         );
 
         // 3. Carregar Histórico de Horas do Membro
@@ -93,7 +93,7 @@ export default function VoluntariadoHoras() {
       // Endpoint: GET /api/members/:memberId/volunteer-logs/
       const response = await fetch(
         `${API_BASE_URL}/members/${id}/volunteer-logs`,
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (!response.ok) throw new Error("Falha ao carregar histórico.");
@@ -134,7 +134,7 @@ export default function VoluntariadoHoras() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!response.ok) {

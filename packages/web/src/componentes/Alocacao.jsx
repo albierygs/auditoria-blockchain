@@ -49,7 +49,7 @@ export default function Alocacao() {
         const errorData = await response.json();
         throw new Error(
           errorData.message ||
-            `Falha ao buscar alocações (Status: ${response.status})`,
+            `Falha ao buscar alocações (Status: ${response.status})`
         );
       }
 

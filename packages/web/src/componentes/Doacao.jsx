@@ -139,7 +139,7 @@ export default function Doacao() {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.message || `Falha no envio (Status: ${response.status})`,
+          errorData.message || `Falha no envio (Status: ${response.status})`
         );
       }
 

@@ -67,7 +67,7 @@ export default function Projetos() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       if (!projectsResponse.ok) {

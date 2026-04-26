@@ -46,7 +46,7 @@ export default function AdminFinanceiroDashboard() {
         ).reduce(
           (acc, d) =>
             d.status === "CONFIRMED" ? acc + parseFloat(d.value) : acc,
-          0,
+          0
         );
 
         let totalGasto = 0;
@@ -54,7 +54,7 @@ export default function AdminFinanceiroDashboard() {
           (p) =>
             fetch(`${API_BASE_URL}/projects/${p.public_id}/expenses`, {
               headers: { Authorization: `Bearer ${token}` },
-            }).then((r) => r.json()),
+            }).then((r) => r.json())
         );
 
         const expensesList = await Promise.all(projectPromises);

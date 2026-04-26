@@ -32,7 +32,7 @@ export default function Relatorios() {
         // Busca o ID da Organização do Membro
         const memberResponse = await fetch(
           `${API_BASE_URL}/members/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!memberResponse.ok)
@@ -64,7 +64,7 @@ export default function Relatorios() {
 
     if (!organizationId) {
       alert(
-        "Não foi possível identificar a organização para exportar os dados.",
+        "Não foi possível identificar a organização para exportar os dados."
       );
       return;
     }
@@ -87,13 +87,13 @@ export default function Relatorios() {
           headers: {
             Authorization: token ? `Bearer ${token}` : "",
           },
-        },
+        }
       );
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.message || "Falha na exportação do relatório.",
+          errorData.message || "Falha na exportação do relatório."
         );
       }
 

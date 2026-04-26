@@ -58,7 +58,7 @@ export default function AdminProjectsManager() {
           `${API_BASE_URL}/organizations/${selectedOrgId}/projects`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          },
+          }
         );
         if (!response.ok)
           throw new Error("Falha ao carregar projetos da organização.");

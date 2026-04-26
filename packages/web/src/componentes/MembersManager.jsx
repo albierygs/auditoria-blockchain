@@ -48,7 +48,7 @@ export default function MembersManager() {
         // Obter ID da Organização do usuário logado
         const memberResponse = await fetch(
           `${API_BASE_URL}/members/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!memberResponse.ok)
@@ -82,13 +82,13 @@ export default function MembersManager() {
       // Endpoint solicitado: GET /api/organizations/:id/members
       const response = await fetch(
         `${API_BASE_URL}/organizations/${orgId}/members`,
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (!response.ok) {
         // Se o endpoint não existir ou der erro, logamos e limpamos a lista
         console.warn(
-          "Falha ao buscar membros. Verifique se a rota '/members' existe no backend.",
+          "Falha ao buscar membros. Verifique se a rota '/members' existe no backend."
         );
         // Tenta usar o retorno padrão caso seja um array, senão array vazio
         const data = await response.json().catch(() => []);
@@ -167,7 +167,7 @@ export default function MembersManager() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ reason }), // Envia a razão no body
-        },
+        }
       );
 
       if (!response.ok) {

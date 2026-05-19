@@ -9,6 +9,7 @@ const {
   verifyOrganization,
   listOrganizationMembers,
   listOrganizationVolunteerLogs,
+  rejectOrganization,
 } = require("../controllers/organizations");
 const {
   validateToken,
@@ -43,6 +44,14 @@ organizationRoutes.put(
   authorizeRoles(["ADMIN"]),
   validateParamId("MEMBER_TO_ORGANIZATION"),
   verifyOrganization
+);
+
+organizationRoutes.put(
+  "/:id/reject",
+  validateToken,
+  authorizeRoles(["ADMIN"]),
+  validateParamId("MEMBER_TO_ORGANIZATION"),
+  rejectOrganization
 );
 
 organizationRoutes.get(

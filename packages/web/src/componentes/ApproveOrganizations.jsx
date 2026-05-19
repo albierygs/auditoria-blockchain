@@ -5,6 +5,7 @@ import {
   FaBuilding,
   FaCheckCircle,
   FaClipboardCheck,
+  FaSearch
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/enviroments";
@@ -129,12 +130,12 @@ const ApproveOrganizations = () => {
                     </div>
                   </div>
 
-                  {/* Botão de Aprovação (Mantido Verde para semântica de Sucesso) */}
+                  {/* Botão de Verificação Modificado */}
                   <button
-                    onClick={() => handleVerify(org.public_id)}
-                    className="bg-green-600 text-white px-5 py-2 rounded-md shadow hover:bg-green-700 transition flex items-center gap-2 font-semibold whitespace-nowrap"
+                    onClick={() => navigate(`/admin/organizations/verify/${org.public_id}`)}
+                    className="bg-blue-600 text-white px-5 py-2 rounded-md shadow hover:bg-blue-700 transition flex items-center gap-2 font-semibold whitespace-nowrap"
                   >
-                    <FaCheckCircle /> Aprovar
+                    <FaSearch /> Verificar
                   </button>
                 </div>
               ))}

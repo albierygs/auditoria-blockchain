@@ -5,6 +5,7 @@ const listAllOrganizations = require("./listAllOrganizationsController");
 const listOrganizationMembers = require("./listOrganizationMembersController");
 const listOrganizationVolunteerLogs = require("./listOrganizationVolunteerLogsController");
 const listVerifiedOrganizations = require("./listVerifiedOrganizations");
+const { rejectOrganization } = require("./rejectOrganizationController");
 const updateOrganization = require("./updateOrganizationController");
 const verifyOrganization = require("./verifyOrganizationController");
 
@@ -18,4 +19,5 @@ module.exports = {
   verifyOrganization,
   listOrganizationMembers,
   listOrganizationVolunteerLogs,
+  rejectOrganization
 };

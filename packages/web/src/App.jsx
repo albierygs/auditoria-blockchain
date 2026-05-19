@@ -8,6 +8,7 @@ import MemberLogin from "./componentes/MemberLogin";
 import OrganizationRegisterForm from "./componentes/OrganizationRegisterForm";
 import ProtectedRoute from "./componentes/ProtectedRoute";
 import RegisterForm from "./componentes/RegisterForm";
+import VerifyOrganization from "./componentes/VerifyOrganization";
 
 import AddAdminForm from "./componentes/AddAdminForm";
 import AdminDashboard from "./componentes/AdminDashboard";
@@ -121,6 +122,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ApproveOrganizations />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/organizations/verify/:id"
+            element={
+              <ProtectedRoute>
+                <VerifyOrganization />
               </ProtectedRoute>
             }
           />

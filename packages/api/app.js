@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const routes = require("./src/routes");
 const { errorHandler, unknownEndpoint } = require("./src/middlewares");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 
 const app = express();
 
@@ -27,6 +28,14 @@ app.use(
 app.use(express.json());
 
 app.use("/api", routes);
+
+app.use(
+  "/",
+  createProxyMiddleware({
+    target: "http://localhost:5173",
+    changeOrigin: true,
+  })
+);
 
 app.use(unknownEndpoint);
 app.use(errorHandler);

@@ -5,7 +5,7 @@ services:
   mysql:
     image: mysql:8.0
     container_name: auditoria-blockchain-mysql
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
       MYSQL_DATABASE: ${DB_NAME:-auditoria_blockchain}
@@ -78,7 +78,7 @@ services:
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: auditoria-blockchain-phpmyadmin
-    restart: always
+    restart: unless-stopped
     depends_on:
       - mysql
     environment:

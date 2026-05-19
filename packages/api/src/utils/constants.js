@@ -24,7 +24,8 @@ const FRONTEND_URL =
     ? process.env.FRONTEND_URL
     : process.env.FRONTEND_URL_DEV;
 
-const MERCADO_PAGO_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACESS_TOKEN;
+const PAGBANK_API_URL = process.env.PAGBANK_API_URL;
+const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN;
 
 module.exports = {
   PORT,
@@ -40,5 +41,6 @@ module.exports = {
   EMAIL_PASSWORD,
   EMAIL_USER,
   FRONTEND_URL,
-  MERCADO_PAGO_ACCESS_TOKEN,
+  PAGBANK_API_URL,
+  PAGBANK_TOKEN,
 };

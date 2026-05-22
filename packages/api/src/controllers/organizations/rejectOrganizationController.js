@@ -1,8 +1,8 @@
 const { db } = require("../../utils/db");
 
-
 const rejectOrganization = async (req, res) => {
   const { id } = req.params;
+  const { reason } = req.body; // Adicionar razão de rejeição
 
   try {
     const organization = await db.organization.findUnique({
@@ -13,12 +13,16 @@ const rejectOrganization = async (req, res) => {
       return res.status(404).json({ message: "Organização não encontrada." });
     }
 
-    // Atualiza a organização para inativa e não verificada
+    // Atualiza a organização como reprovada
     const updatedOrganization = await db.organization.update({
       where: { public_id: id },
       data: {
-        status: "INACTIVE",
-        verified: false,
+        verification_status: "REJECTED",
+        rejected_at: new Date(),
+        rejected_by: req.user.publicId,
+        rejection_reason: reason || null,
+        verified: false, // Mantém verified como false para indicar que não foi aprovada
+        // Mantém status ACTIVE para permitir re-análise
       },
     });
 

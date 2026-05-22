@@ -2,8 +2,16 @@ const { db } = require("../../utils/db");
 const ApiException = require("../../exceptions/apiException");
 
 const getOrganization = async (req, res) => {
+  const whereClause = { public_id: req.params.id };
+
+  // Se o usuário é um global_admin (ADMIN), pode acessar todas as orgs
+  // Caso contrário, apenas orgs com status ACTIVE
+  if (req.user.role !== "ADMIN") {
+    whereClause.status = "ACTIVE";
+  }
+
   const organization = await db.organization.findUnique({
-    where: { public_id: req.params.id, status: "ACTIVE" },
+    where: whereClause,
     select: {
       public_id: true,
       name: true,
@@ -13,6 +21,12 @@ const getOrganization = async (req, res) => {
       phone: true,
       cnpj: true,
       verified: true,
+      verification_status: true,
+      verified_at: true,
+      verified_by: true,
+      rejected_at: true,
+      rejected_by: true,
+      rejection_reason: true,
       status: true,
       created_at: true,
       updated_at: true,

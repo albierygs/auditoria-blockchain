@@ -53,6 +53,29 @@ enum PaymentMethod {
   DEBIT
 }
 
+enum PagbankOnboardingStatus {
+  PENDING
+  SUBMITTED
+  VERIFIED
+  REJECTED
+  SUSPENDED
+}
+
+enum RecurringDonationStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  COMPLETED
+}
+
+enum RecurringInterval {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
 enum DonationStatus {
   PENDING
   CONFIRMED
@@ -113,6 +136,12 @@ enum VolunteerLogStatus {
 enum CertificateType {
   CERTIFICATE
   NFT
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum StateBR {
@@ -189,6 +218,7 @@ model donor {
   created_at          DateTime              @default(now())
   updated_at          DateTime              @updatedAt()
   digital_certificate digital_certificate[]
+  recurringDonations  recurring_donation[]
 }
 
 model organization_member {
@@ -214,34 +244,59 @@ model organization_member {
 }
 
 model organization {
-  id          Int       @id @default(autoincrement())
-  public_id   String    @unique @default(uuid())
-  name        String
-  description String
-  website     String?
-  email       String    @unique
-  password    String
-  phone       String
-  cnpj        String    @unique
-  status      Status
-  verified    Boolean   @default(false)
-  verified_at DateTime?
-  verified_by String?
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt()
-  deleted_at  DateTime?
+  id                  Int                @id @default(autoincrement())
+  public_id           String             @unique @default(uuid())
+  name                String
+  description         String
+  website             String?
+  email               String             @unique
+  password            String
+  phone               String
+  cnpj                String             @unique
+  status              Status
+  verified            Boolean            @default(false)
+  verification_status VerificationStatus @default(PENDING)
+  verified_at         DateTime?
+  verified_by         String?
+  rejected_at         DateTime?
+  rejected_by         String?
+  rejection_reason    String?            @db.Text
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt()
+  deleted_at          DateTime?
 
-  donations     donation[]
-  projects      project[]
-  members       organization_member[]
-  allocations   allocation[]
-  memberships   organization_membership[]
-  suppliers     supplier[]
-  beneficiaries beneficiary[]
+  donations          donation[]
+  projects           project[]
+  members            organization_member[]
+  allocations        allocation[]
+  memberships        organization_membership[]
+  suppliers          supplier[]
+  beneficiaries      beneficiary[]
+  pagbank_account    pagbank_account?
+  recurringDonations recurring_donation[]
 
   @@index([email])
   @@index([cnpj])
   @@index([status, verified])
+}
+
+model pagbank_account {
+  id                  Int                     @id @default(autoincrement())
+  public_id           String                  @unique @default(uuid())
+  organization        organization            @relation(fields: [organization_id], references: [public_id])
+  organization_id     String                  @unique
+  external_account_id String?                 @unique
+  onboarding_status   PagbankOnboardingStatus @default(PENDING)
+  account_email       String?
+  account_name        String?
+  account_data        Json?
+  webhook_secret      String?
+  connected_at        DateTime?
+  created_at          DateTime                @default(now())
+  updated_at          DateTime                @updatedAt()
+
+  @@index([organization_id])
+  @@index([external_account_id])
 }
 
 model organization_membership {
@@ -317,16 +372,20 @@ model beneficiary {
 // ========================================
 
 model donation {
-  id              Int            @id @default(autoincrement())
-  public_id       String         @unique @default(uuid())
-  donor           donor          @relation(fields: [donor_id], references: [public_id])
-  donor_id        String
-  organization    organization   @relation(fields: [organization_id], references: [public_id])
-  organization_id String
-  value           Decimal        @db.Decimal(10, 2)
-  date            DateTime       @default(now())
-  payment_method  PaymentMethod
-  status          DonationStatus @default(PENDING)
+  id                    Int                   @id @default(autoincrement())
+  public_id             String                @unique @default(uuid())
+  donor                 donor                 @relation(fields: [donor_id], references: [public_id])
+  donor_id              String
+  organization          organization          @relation(fields: [organization_id], references: [public_id])
+  organization_id       String
+  value                 Decimal               @db.Decimal(10, 2)
+  date                  DateTime              @default(now())
+  payment_method        PaymentMethod
+  status                DonationStatus        @default(PENDING)
+  payment_gateway       String?               @default("PAGBANK")
+  recurring_donation    recurring_donation?   @relation(fields: [recurring_donation_id], references: [public_id])
+  recurring_donation_id String?
+  pagbank_transactions  pagbank_transaction[]
 
   confirmed_at        DateTime?
   confirmed_by        String?
@@ -346,6 +405,57 @@ model donation {
   @@index([status])
   @@index([date])
   @@index([donor_id, status])
+}
+
+model recurring_donation {
+  id               Int                     @id @default(autoincrement())
+  public_id        String                  @unique @default(uuid())
+  donor            donor                   @relation(fields: [donor_id], references: [public_id])
+  donor_id         String
+  organization     organization            @relation(fields: [organization_id], references: [public_id])
+  organization_id  String
+  amount           Decimal                 @db.Decimal(18, 4)
+  currency         String                  @default("BRL")
+  interval         RecurringInterval
+  interval_count   Int                     @default(1)
+  status           RecurringDonationStatus @default(ACTIVE)
+  start_date       DateTime                @default(now())
+  next_charge_date DateTime
+  last_charge_at   DateTime?
+  ended_at         DateTime?
+  payment_method   PaymentMethod
+  payment_gateway  String                  @default("PAGBANK")
+  metadata         Json?
+  created_at       DateTime                @default(now())
+  updated_at       DateTime                @updatedAt()
+
+  donations donation[]
+
+  @@index([donor_id])
+  @@index([organization_id])
+  @@index([status])
+  @@index([next_charge_date])
+}
+
+model pagbank_transaction {
+  id               Int       @id @default(autoincrement())
+  public_id        String    @unique @default(uuid())
+  donation         donation? @relation(fields: [donation_id], references: [public_id])
+  donation_id      String?
+  external_id      String    @unique
+  amount           Decimal   @db.Decimal(18, 4)
+  currency         String    @default("BRL")
+  status           String
+  status_detail    String?
+  type             String?
+  gateway_response Json?
+  transaction_date DateTime?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt()
+
+  @@index([donation_id])
+  @@index([external_id])
+  @@index([status])
 }
 
 model project {

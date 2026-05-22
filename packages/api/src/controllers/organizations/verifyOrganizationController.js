@@ -48,14 +48,17 @@ const verifyOrganization = async (req, res) => {
     },
     data: {
       verified: true,
+      verification_status: "APPROVED",
       verified_at: new Date(),
       verified_by: req.user.publicId,
+      rejection_reason: null, // Limpar qualquer razão de rejeição anterior
     },
     select: {
       public_id: true,
       name: true,
       email: true,
       verified: true,
+      verification_status: true,
       verified_at: true,
     },
   });

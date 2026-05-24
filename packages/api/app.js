@@ -16,7 +16,8 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
+      // Em produção, se a variável não estiver setada, pode dar problema, então deixamos mais flexível ou logamos
+      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error(`Origem não permitida pelo CORS: ${origin}`));
@@ -36,13 +37,20 @@ app.use(express.json());
 
 app.use("/api", routes);
 
-app.use(
-  "/",
-  createProxyMiddleware({
-    target: "http://localhost:5173",
-    changeOrigin: true,
-  })
-);
+if (process.env.NODE_ENV !== "production") {
+  app.use(
+    "/",
+    createProxyMiddleware({
+      target: "http://localhost:5173",
+      changeOrigin: true,
+    })
+  );
+} else {
+  // Retorna uma mensagem de saúde básica para a raiz em produção
+  app.get("/", (req, res) => {
+    res.status(200).json({ status: "API is running on Serverless Vercel" });
+  });
+}
 
 app.use(unknownEndpoint);
 app.use(errorHandler);

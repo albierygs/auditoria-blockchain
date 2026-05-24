@@ -8,8 +8,6 @@ if (process.env.NODE_ENV !== "production") {
     await seedAdmin();
     console.log(`server running on http://localhost:${PORT}/api`);
   });
-} else {
-  seedAdmin().catch(console.error);
 }
 
 module.exports = app;

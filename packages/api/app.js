@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const routes = require("./src/routes");
 const { errorHandler, unknownEndpoint } = require("./src/middlewares");
-const { createProxyMiddleware } = require("http-proxy-middleware");
 const webhookRoutes = require("./src/routes/webhookRoutes");
 
 const app = express();
@@ -38,6 +37,7 @@ app.use(express.json());
 app.use("/api", routes);
 
 if (process.env.NODE_ENV !== "production") {
+  const { createProxyMiddleware } = require("http-proxy-middleware");
   app.use(
     "/",
     createProxyMiddleware({

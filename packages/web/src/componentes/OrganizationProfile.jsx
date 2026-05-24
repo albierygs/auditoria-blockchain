@@ -4,12 +4,17 @@ import { useEffect, useState } from "react";
 import {
   FaArrowLeft,
   FaBuilding,
+  FaCheckCircle,
+  FaClock,
+  FaCreditCard,
   FaEdit,
   FaEnvelope,
   FaGlobe,
   FaIdCard,
+  FaLink,
   FaPhone,
   FaSave,
+  FaTimesCircle,
   FaTrash,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +25,8 @@ export default function OrganizationProfile() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState(null);
+  const [stripeAccount, setStripeAccount] = useState(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
 
   // Estado do formulário
   const [formData, setFormData] = useState({
@@ -87,6 +94,19 @@ export default function OrganizationProfile() {
           cnpj: orgData.cnpj || "",
           verified: orgData.verified,
         });
+
+        // Fetch Stripe account status
+        try {
+          const stripeRes = await fetch(`${API_BASE_URL}/stripe/account`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (stripeRes.ok) {
+            const stripeData = await stripeRes.json();
+            setStripeAccount(stripeData);
+          }
+        } catch (e) {
+          /* org may not have stripe yet */
+        }
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -96,6 +116,57 @@ export default function OrganizationProfile() {
     };
     fetchData();
   }, [navigate, token]);
+
+  // --- Stripe Onboarding ---
+  const handleStripeOnboarding = async () => {
+    setStripeLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/stripe/onboarding`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok)
+        throw new Error((await response.json()).message || "Erro");
+      const data = await response.json();
+      
+      // Redirect to Stripe onboarding URL
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      alert("Erro: " + err.message);
+      setStripeLoading(false);
+    }
+  };
+
+  // --- Stripe Login Link ---
+  const handleStripeLoginLink = async () => {
+    setStripeLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/stripe/login-link`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok)
+        throw new Error((await response.json()).message || "Erro");
+      const data = await response.json();
+      
+      // Redirect to Stripe Dashboard
+      if (data.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err) {
+      alert("Erro: " + err.message);
+    } finally {
+      setStripeLoading(false);
+    }
+  };
 
   // --- 2. Manipulação do Formulário ---
   const handleChange = (e) => {
@@ -372,6 +443,117 @@ export default function OrganizationProfile() {
                 </div>
               )}
             </form>
+
+            {/* ─── Stripe Integration Section ─── */}
+            <hr className="my-8 border-teal-100" />
+
+            {/* No Stripe account */}
+            {!stripeAccount && (
+              <div className="relative rounded-xl border-2 border-dashed border-teal-300 bg-gradient-to-br from-teal-50/60 via-white/40 to-green-50/60 backdrop-blur-md p-8 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center shadow-lg">
+                    <FaCreditCard className="text-white text-2xl" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-teal-900 mb-2">
+                  Integração Stripe
+                </h3>
+                <p className="text-teal-700 mb-6 max-w-md mx-auto">
+                  Conecte sua organização à Stripe para receber doações.
+
+                </p>
+                <button
+                  onClick={handleStripeOnboarding}
+                  disabled={stripeLoading}
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-8 py-3 rounded-lg shadow-lg hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {stripeLoading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        />
+                      </svg>
+                      Conectando...
+                    </>
+                  ) : (
+                    <>
+                      <FaLink /> Conectar à Stripe
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* PENDING / SUBMITTED / NOT CHARGES ENABLED */}
+            {stripeAccount &&
+              !stripeAccount.charges_enabled && (
+                <div className="relative rounded-xl bg-gradient-to-br from-amber-50/80 via-yellow-50/60 to-orange-50/40 backdrop-blur-md p-8 border border-amber-200 shadow-md">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg">
+                        <FaClock className="text-white text-2xl animate-pulse" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-amber-900">
+                          Ação Necessária na Stripe
+                        </h3>
+                        <p className="text-amber-700 mt-1">
+                          Sua conta Stripe foi criada, mas você precisa enviar documentos adicionais para receber pagamentos.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleStripeOnboarding}
+                      disabled={stripeLoading}
+                      className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-2.5 rounded-lg shadow hover:from-amber-600 hover:to-orange-600 transition-all duration-300 font-semibold disabled:opacity-60"
+                    >
+                      {stripeLoading ? "Processando..." : "Completar Onboarding"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            {/* CHARGES ENABLED */}
+            {stripeAccount && stripeAccount.charges_enabled && (
+              <div className="relative rounded-xl bg-gradient-to-br from-green-50/80 via-emerald-50/60 to-teal-50/40 backdrop-blur-md p-8 border border-green-200 shadow-md shadow-green-100">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
+                      <FaCheckCircle className="text-white text-2xl" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-green-900">
+                        ✅ Stripe Conectada
+                      </h3>
+                      {stripeAccount.account_email && (
+                        <p className="text-green-700 text-sm mt-1">
+                          Conta: {stripeAccount.account_email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleStripeLoginLink}
+                    disabled={stripeLoading}
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-6 py-2.5 rounded-lg shadow hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 font-semibold disabled:opacity-60"
+                  >
+                    {stripeLoading ? "Processando..." : "Acessar Dashboard Stripe"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>

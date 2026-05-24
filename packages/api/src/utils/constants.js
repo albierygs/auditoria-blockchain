@@ -19,13 +19,13 @@ const FORGOT_TOKEN_EXPIRATION_MINUTES = Number(
 const EMAIL_SERVICE = process.env.EMAIL_SERVICE;
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
-const FRONTEND_URL =
-  process.env.NODE_ENV === "production"
-    ? process.env.FRONTEND_URL
-    : process.env.FRONTEND_URL_DEV;
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
-const PAGBANK_API_URL = process.env.PAGBANK_API_URL;
-const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN;
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+const WEBHOOK_BASE_URL_DEV =
+  process.env.WEBHOOK_BASE_URL_DEV ||
+  "https://unspiring-preinflectional-lauri.ngrok-free.dev";
 
 module.exports = {
   PORT,
@@ -41,6 +41,7 @@ module.exports = {
   EMAIL_PASSWORD,
   EMAIL_USER,
   FRONTEND_URL,
-  PAGBANK_API_URL,
-  PAGBANK_TOKEN,
+  STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET,
+  WEBHOOK_BASE_URL_DEV,
 };

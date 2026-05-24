@@ -1,6 +1,6 @@
 // src/componentes/Doacao.jsx
 import { useEffect, useState } from "react";
-import { FaArrowLeft, FaDonate } from "react-icons/fa"; // Importar ícones e useNavigate
+import { FaArrowLeft, FaArrowRight, FaDonate } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/enviroments";
 
@@ -20,7 +20,6 @@ export default function Doacao() {
   const [form, setForm] = useState({
     organization_id: "",
     value: "",
-    payment_method: "PIX",
   });
 
   const TOKEN_KEY = "token";
@@ -123,10 +122,8 @@ export default function Doacao() {
       const payload = {
         organization_id: form.organization_id,
         value: Number(form.value),
-        payment_method: form.payment_method,
       };
 
-      // Requisição POST para /api/donations/
       const response = await fetch(`${API_BASE_URL}/donations`, {
         method: "POST",
         headers: {
@@ -143,16 +140,8 @@ export default function Doacao() {
         );
       }
 
-      // Se a doação foi registrada, recarrega a lista
-      await carregarDoacoes();
-
-      setForm({
-        organization_id: "",
-        value: "",
-        payment_method: "PIX",
-      });
-
-      alert("Doação registrada com sucesso!");
+      const data = await response.json();
+      navigate(`/pagamento/${data.public_id}`);
     } catch (error) {
       console.log("Erro ao registrar doação:", error);
       alert(`Erro ao registrar doação: ${error.message}`);
@@ -235,29 +224,12 @@ export default function Doacao() {
               />
             </div>
 
-            {/* Método de Pagamento */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">
-                Método de Pagamento
-              </label>
-              <select
-                name="payment_method"
-                className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-white/80"
-                value={form.payment_method}
-                onChange={handleChange}
-              >
-                <option value="PIX">PIX</option>
-                <option value="CREDIT">Cartão de Crédito</option>
-                <option value="DEBIT">Débito</option>
-                <option value="TRANSFER">Transferência</option>
-                <option value="BANK_SLIP">Boleto</option>
-              </select>
-            </div>
+
 
             {/* Botão de Envio */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-md font-semibold shadow-md hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-md font-semibold shadow-md hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={
                 !form.organization_id ||
                 !form.value ||
@@ -265,7 +237,7 @@ export default function Doacao() {
                 loadingOrg
               }
             >
-              Registrar Doação
+              Prosseguir para Pagamento <FaArrowRight />
             </button>
           </form>
         </div>
@@ -287,18 +259,41 @@ export default function Doacao() {
                   key={d.public_id ?? d.id ?? index}
                   className="border border-cyan-100 p-4 rounded-lg shadow-sm bg-white hover:shadow-md transition"
                 >
-                  <p className="font-semibold text-lg text-sky-800">
-                    {formatValue(d.value)}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Organização:{" "}
-                    <span className="font-medium text-gray-800">
-                      {d.organization?.name || "—"}
-                    </span>
-                  </p>
-                  <div className="flex justify-between items-center text-xs mt-1">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold text-lg text-sky-800">
+                        {formatValue(d.value)}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Organização:{" "}
+                        <span className="font-medium text-gray-800">
+                          {d.organization?.name || "—"}
+                        </span>
+                      </p>
+                    </div>
+                    {d.status === "PENDING" && (
+                      <button
+                        onClick={() => navigate(`/pagamento/${d.public_id}`)}
+                        className="px-4 py-1.5 bg-amber-500 text-white rounded-lg text-xs font-semibold shadow-sm hover:bg-amber-600 transition-colors flex-shrink-0"
+                      >
+                        Continuar Pagamento
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center text-xs mt-2">
                     <p className="text-gray-500">
-                      Status: <span className="font-medium">{d.status}</span>
+                      Status:{" "}
+                      <span
+                        className={`font-semibold px-2 py-0.5 rounded-full ${
+                          d.status === "CONFIRMED"
+                            ? "bg-green-100 text-green-700"
+                            : d.status === "PENDING"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {d.status}
+                      </span>
                     </p>
                     {d.blockchain_transaction?.hash && (
                       <p className="text-cyan-600 font-mono text-xs">

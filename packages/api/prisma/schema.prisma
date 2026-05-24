@@ -51,14 +51,14 @@ enum PaymentMethod {
   TRANSFER
   CREDIT
   DEBIT
+  BOLETO
 }
 
-enum PagbankOnboardingStatus {
+enum StripeAccountStatus {
   PENDING
-  SUBMITTED
-  VERIFIED
+  APPROVED
   REJECTED
-  SUSPENDED
+  RESTRICTED
 }
 
 enum RecurringDonationStatus {
@@ -272,7 +272,7 @@ model organization {
   memberships        organization_membership[]
   suppliers          supplier[]
   beneficiaries      beneficiary[]
-  pagbank_account    pagbank_account?
+  stripe_account     stripe_account?
   recurringDonations recurring_donation[]
 
   @@index([email])
@@ -280,23 +280,23 @@ model organization {
   @@index([status, verified])
 }
 
-model pagbank_account {
-  id                  Int                     @id @default(autoincrement())
-  public_id           String                  @unique @default(uuid())
-  organization        organization            @relation(fields: [organization_id], references: [public_id])
-  organization_id     String                  @unique
-  external_account_id String?                 @unique
-  onboarding_status   PagbankOnboardingStatus @default(PENDING)
+model stripe_account {
+  id                  Int                   @id @default(autoincrement())
+  public_id           String                @unique @default(uuid())
+  organization        organization          @relation(fields: [organization_id], references: [public_id])
+  organization_id     String                @unique
+  stripe_account_id   String?               @unique
+  charges_enabled     Boolean               @default(false)
+  payouts_enabled     Boolean               @default(false)
+  details_submitted   Boolean               @default(false)
   account_email       String?
   account_name        String?
   account_data        Json?
-  webhook_secret      String?
-  connected_at        DateTime?
-  created_at          DateTime                @default(now())
-  updated_at          DateTime                @updatedAt()
+  created_at          DateTime              @default(now())
+  updated_at          DateTime              @updatedAt()
 
   @@index([organization_id])
-  @@index([external_account_id])
+  @@index([stripe_account_id])
 }
 
 model organization_membership {
@@ -382,10 +382,10 @@ model donation {
   date                  DateTime              @default(now())
   payment_method        PaymentMethod
   status                DonationStatus        @default(PENDING)
-  payment_gateway       String?               @default("PAGBANK")
+  payment_gateway       String?               @default("STRIPE")
   recurring_donation    recurring_donation?   @relation(fields: [recurring_donation_id], references: [public_id])
   recurring_donation_id String?
-  pagbank_transactions  pagbank_transaction[]
+  stripe_transactions   stripe_transaction[]
 
   confirmed_at        DateTime?
   confirmed_by        String?
@@ -424,7 +424,7 @@ model recurring_donation {
   last_charge_at   DateTime?
   ended_at         DateTime?
   payment_method   PaymentMethod
-  payment_gateway  String                  @default("PAGBANK")
+  payment_gateway  String                  @default("STRIPE")
   metadata         Json?
   created_at       DateTime                @default(now())
   updated_at       DateTime                @updatedAt()
@@ -437,24 +437,23 @@ model recurring_donation {
   @@index([next_charge_date])
 }
 
-model pagbank_transaction {
-  id               Int       @id @default(autoincrement())
-  public_id        String    @unique @default(uuid())
-  donation         donation? @relation(fields: [donation_id], references: [public_id])
-  donation_id      String?
-  external_id      String    @unique
-  amount           Decimal   @db.Decimal(18, 4)
-  currency         String    @default("BRL")
-  status           String
-  status_detail    String?
-  type             String?
-  gateway_response Json?
-  transaction_date DateTime?
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt()
+model stripe_transaction {
+  id                         Int       @id @default(autoincrement())
+  public_id                  String    @unique @default(uuid())
+  donation                   donation? @relation(fields: [donation_id], references: [public_id])
+  donation_id                String?
+  stripe_checkout_session_id String    @unique
+  amount                     Decimal   @db.Decimal(18, 4)
+  net_value                  Decimal?  @db.Decimal(10, 2)
+  currency                   String    @default("BRL")
+  status                     String
+  payment_method             String?
+  gateway_response           Json?
+  created_at                 DateTime  @default(now())
+  updated_at                 DateTime  @updatedAt()
 
   @@index([donation_id])
-  @@index([external_id])
+  @@index([stripe_checkout_session_id])
   @@index([status])
 }
 

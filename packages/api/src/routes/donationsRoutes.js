@@ -9,10 +9,12 @@ const {
   getDonation,
   createDonation,
   updateDonation,
+  createCheckout,
 } = require("../controllers/donations");
 const {
   createDonationSchema,
   updateDonationSchema,
+  checkoutSchema,
 } = require("../schemas/donations");
 const statusHistoryRoutes = require("./statusHistoryRoutes");
 
@@ -41,6 +43,14 @@ donationsRoutes.post(
   authorizeRoles(["DONOR"]),
   validateReqBody(createDonationSchema),
   createDonation
+);
+
+// Rota para processar checkout/pagamento de uma doação
+donationsRoutes.post(
+  "/:donationId/checkout",
+  validateToken,
+  authorizeRoles(["DONOR"]),
+  createCheckout
 );
 
 // Rota para atualizar uma doação (confirmar, cancelar, etc.)

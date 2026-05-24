@@ -17,6 +17,7 @@ const {
 const donationsRoutes = require("./donationsRoutes");
 const blockchainRoutes = require("./blockchainRoutes");
 const allocationsRoutes = require("./allocationsRoutes");
+const stripeRoutes = require("./stripeRoutes");
 const { listAllStatusHistory } = require("../controllers/statusHistory");
 
 const routes = Router({ mergeParams: true });
@@ -36,5 +37,6 @@ routes.use("/volunteer-logs", globalVolunteerLogsRoutes);
 routes.get("/status-history", validateToken, listAllStatusHistory);
 routes.use("/donations", donationsRoutes);
 routes.use("/blockchain", blockchainRoutes);
+routes.use("/stripe", stripeRoutes);
 
 module.exports = routes;

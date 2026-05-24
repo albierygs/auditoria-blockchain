@@ -15,14 +15,6 @@ const createDonationSchema = z
         { message: "value can have a maximum of 2 decimal places" }
       )
       .nonoptional("value required"),
-    payment_method: z
-      .enum(["PIX", "TRANSFER", "CREDIT", "DEBIT"], {
-        errorMap: () => ({
-          message:
-            "invalid payment method. Use: PIX, TRANSFER, CREDIT ou DEBIT",
-        }),
-      })
-      .nonoptional("payment method required"),
   })
   .strict();
 

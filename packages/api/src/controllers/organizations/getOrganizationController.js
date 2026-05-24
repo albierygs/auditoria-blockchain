@@ -38,6 +38,16 @@ const getOrganization = async (req, res) => {
           members: true,
         },
       },
+      stripe_account: {
+        select: {
+          public_id: true,
+          stripe_account_id: true,
+          charges_enabled: true,
+          payouts_enabled: true,
+          details_submitted: true,
+          account_email: true,
+        },
+      },
     },
   });
 

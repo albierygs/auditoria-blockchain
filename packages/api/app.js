@@ -3,6 +3,7 @@ const cors = require("cors");
 const routes = require("./src/routes");
 const { errorHandler, unknownEndpoint } = require("./src/middlewares");
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const webhookRoutes = require("./src/routes/webhookRoutes");
 
 const app = express();
 
@@ -23,6 +24,12 @@ app.use(
     },
     credentials: true,
   })
+);
+
+app.use(
+  "/api/webhooks",
+  express.raw({ type: "application/json" }),
+  webhookRoutes
 );
 
 app.use(express.json());

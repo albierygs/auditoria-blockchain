@@ -5,6 +5,10 @@ const listVerifiedOrganizations = async (_req, res) => {
     where: {
       verified: true,
       status: "ACTIVE",
+      // Somente organizações com conta Stripe habilitada para pagamentos
+      stripe_account: {
+        charges_enabled: true,
+      },
     },
     omit: {
       password: true,
@@ -12,6 +16,13 @@ const listVerifiedOrganizations = async (_req, res) => {
       updated_at: true,
       status: true,
       id: true,
+    },
+    include: {
+      stripe_account: {
+        select: {
+          charges_enabled: true,
+        },
+      },
     },
   });
   res.status(200).json(organizations);

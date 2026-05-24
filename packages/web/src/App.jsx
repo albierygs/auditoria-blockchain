@@ -27,6 +27,9 @@ import ResetPassword from "./componentes/ResetPassword";
 import Alocacao from "./componentes/Alocacao";
 import Blockchain from "./componentes/Blockchain";
 import Doacao from "./componentes/Doacao";
+import Pagamento from "./componentes/Pagamento";
+import PagamentoCancelado from "./componentes/PagamentoCancelado";
+import PagamentoSucesso from "./componentes/PagamentoSucesso";
 
 import FinanceiroContas from "./componentes/FinanceiroContas";
 import FinanceiroDashboard from "./componentes/FinanceiroDashboard";
@@ -255,6 +258,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <Doacao />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pagamento/:donationId"
+            element={
+              <ProtectedRoute>
+                <Pagamento />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pagamento/sucesso/:donationId"
+            element={
+              <ProtectedRoute>
+                <PagamentoSucesso />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pagamento/cancelado/:donationId"
+            element={
+              <ProtectedRoute>
+                <PagamentoCancelado />
               </ProtectedRoute>
             }
           />

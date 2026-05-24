@@ -154,15 +154,26 @@ export default function HistoricoDoacoes() {
                         {formatDate(d.date)}
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <button
-                          // Mantém a funcionalidade de ir para DetalhesDoacoes
-                          onClick={() =>
-                            navigate(`/detalhes-doacoes/${d.public_id}`)
-                          }
-                          className="px-4 py-1 bg-cyan-600 text-white rounded-md text-xs font-medium shadow-sm hover:bg-cyan-700 transition-colors"
-                        >
-                          Detalhes
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          {d.status === "PENDING" && (
+                            <button
+                              onClick={() =>
+                                navigate(`/pagamento/${d.public_id}`)
+                              }
+                              className="px-4 py-1 bg-amber-500 text-white rounded-md text-xs font-medium shadow-sm hover:bg-amber-600 transition-colors"
+                            >
+                              Pagar
+                            </button>
+                          )}
+                          <button
+                            onClick={() =>
+                              navigate(`/detalhes-doacoes/${d.public_id}`)
+                            }
+                            className="px-4 py-1 bg-cyan-600 text-white rounded-md text-xs font-medium shadow-sm hover:bg-cyan-700 transition-colors"
+                          >
+                            Detalhes
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

@@ -1,6 +1,6 @@
 const { db } = require("../../utils/db");
 const stripeService = require("../../services/stripeService");
-const ApiException = require("../../exceptions/ApiException");
+const ApiException = require("../../exceptions/apiException");
 
 const createStripeAccountController = async (req, res, next) => {
   try {

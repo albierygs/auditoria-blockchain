@@ -1,4 +1,3 @@
-// src/componentes/OrganizationRegisterForm.jsx
 import { useState } from "react";
 import {
   FaArrowLeft,
@@ -9,17 +8,20 @@ import {
   FaLock,
   FaPhone,
   FaUser,
+  FaCheckCircle,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/enviroments";
 
 const OrganizationRegisterForm = () => {
   const navigate = useNavigate();
+
+  // Controla o estado de envio do formulário
   const [loading, setLoading] = useState(false);
 
-  // Estado que combina dados da Organização e do Administrador Inicial
+  // Estado principal com dados da organização, administrador e documentos
   const [formData, setFormData] = useState({
-    // Dados da Organização (Organization)
+    // Dados da Organização
     name: "",
     description: "",
     website: "",
@@ -27,7 +29,7 @@ const OrganizationRegisterForm = () => {
     phone: "",
     cnpj: "",
 
-    // Dados do Administrador Inicial (Person + Member)
+    // Dados do Administrador Inicial
     adminName: "",
     adminEmail: "",
     adminPassword: "",
@@ -36,48 +38,115 @@ const OrganizationRegisterForm = () => {
     adminCity: "",
     adminState: "",
     adminBirthDate: "",
+
+    // NOVO: documentos obrigatórios para aprovação
+    statutes: null,
+    registrationCertificate: null,
+    governanceDocument: null,
   });
 
+  // NOVO: controla visualmente quais arquivos já foram enviados
+  const [uploadedFiles, setUploadedFiles] = useState({
+    statutes: false,
+    registrationCertificate: false,
+    governanceDocument: false,
+  });
+
+  // Atualiza campos normais do formulário
   const handleChange = (e) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
+  // NOVO: valida e salva os arquivos enviados
+  const handleFileChange = (e, fileType) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      // Limite máximo: 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Arquivo muito grande! Máximo 5MB.");
+        return;
+      }
+
+      // Tipos permitidos
+      const validTypes = [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+      ];
+
+      if (!validTypes.includes(file.type)) {
+        alert("Apenas PDF, JPG ou PNG são aceitos.");
+        return;
+      }
+
+      // Salva o arquivo no formData
+      setFormData((prev) => ({ ...prev, [fileType]: file }));
+
+      // Marca visualmente como enviado
+      setUploadedFiles((prev) => ({ ...prev, [fileType]: true }));
+    }
+  };
+
+  // Envia o cadastro para o backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Nota: Estamos assumindo que o back-end foi modificado para aceitar o Admin aninhado
-      const payload = {
-        name: formData.name,
-        description: formData.description,
-        website: formData.website || undefined,
-        email: formData.email,
-        phone: formData.phone,
-        cnpj: formData.cnpj,
+      // NOVO: valida se todos os documentos foram enviados
+      if (
+        !uploadedFiles.statutes ||
+        !uploadedFiles.registrationCertificate ||
+        !uploadedFiles.governanceDocument
+      ) {
+        alert("Por favor, envie todos os documentos obrigatórios.");
+        setLoading(false);
+        return;
+      }
 
-        // Dados do Admin Inicial (Admin Person/Member data)
-        admin: {
-          name: formData.adminName,
-          email: formData.adminEmail,
-          password: formData.adminPassword,
-          phone: formData.adminPhone,
-          document: formData.adminDocument,
-          city: formData.adminCity,
-          state: formData.adminState,
-          birthDate: formData.adminBirthDate,
-        },
-      };
+      // MODIFICADO: agora usa FormData porque precisa enviar arquivos
+      const formDataMultipart = new FormData();
 
-      // Endpoint: POST /api/organizations/create
+      // Dados da organização
+      formDataMultipart.append("name", formData.name);
+      formDataMultipart.append("description", formData.description);
+      formDataMultipart.append("website", formData.website || "");
+      formDataMultipart.append("email", formData.email);
+      formDataMultipart.append("phone", formData.phone);
+      formDataMultipart.append("cnpj", formData.cnpj);
+
+      // Dados do administrador inicial
+      formDataMultipart.append("admin[name]", formData.adminName);
+      formDataMultipart.append("admin[email]", formData.adminEmail);
+      formDataMultipart.append("admin[password]", formData.adminPassword);
+      formDataMultipart.append("admin[phone]", formData.adminPhone);
+      formDataMultipart.append("admin[document]", formData.adminDocument);
+      formDataMultipart.append("admin[city]", formData.adminCity);
+      formDataMultipart.append("admin[state]", formData.adminState);
+      formDataMultipart.append("admin[birthDate]", formData.adminBirthDate);
+
+      // NOVO: adiciona os documentos no envio
+      formDataMultipart.append("documents[statutes]", formData.statutes);
+      formDataMultipart.append(
+        "documents[registrationCertificate]",
+        formData.registrationCertificate
+      );
+      formDataMultipart.append(
+        "documents[governanceDocument]",
+        formData.governanceDocument
+      );
+
+      // MODIFICADO: sem Content-Type manual, pois FormData define multipart automaticamente
       const response = await fetch(`${API_BASE_URL}/organizations/create`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formDataMultipart,
       });
 
       let errorMessage = "";
+
       try {
         const data = await response.json();
         errorMessage = data.message || JSON.stringify(data);
@@ -91,8 +160,9 @@ const OrganizationRegisterForm = () => {
       }
 
       alert(
-        "Cadastro enviado com sucesso! Aguarde a aprovação do Administrador do Sistema."
+        "Cadastro enviado com sucesso! Sua documentação será analisada e você receberá uma notificação quando a organização for aprovada."
       );
+
       navigate("/");
     } catch (error) {
       console.error("Erro no cadastro:", error);
@@ -103,9 +173,8 @@ const OrganizationRegisterForm = () => {
   };
 
   return (
-    // Padrão de Layout Centralizado
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-white/25 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] w-full max-w-xl overflow-y-auto max-h-[95vh]">
+      <div className="bg-white/25 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] w-full max-w-2xl overflow-y-auto max-h-[95vh]">
         {/* Cabeçalho */}
         <div className="flex justify-center items-center mb-4">
           <div className="bg-gradient-to-r from-green-500 to-teal-400 p-3 rounded-full shadow-lg">
@@ -116,12 +185,14 @@ const OrganizationRegisterForm = () => {
         <h2 className="text-center text-2xl font-extrabold mb-1 text-sky-800">
           Registro de Organização
         </h2>
+
         <p className="text-center text-sm text-gray-700 mb-6">
-          Preencha os dados para solicitar a verificação e acesso à plataforma.
+          Preencha os dados e envie a documentação necessária para solicitar a
+          verificação.
         </p>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
-          {/* == Seção 1: Dados da Organização (Entidade Principal) == */}
+          {/* Dados da Organização */}
           <fieldset className="p-4 border border-teal-300/60 rounded-lg space-y-4">
             <legend className="px-2 text-lg font-semibold text-teal-700">
               Dados Legais da Organização
@@ -149,23 +220,22 @@ const OrganizationRegisterForm = () => {
               },
               {
                 id: "website",
-                label: "Website (Opcional)",
+                label: "Website",
                 icon: <FaGlobe />,
                 type: "url",
                 optional: true,
               },
             ].map((field) => (
               <div key={field.id} className="space-y-1">
-                <label
-                  htmlFor={field.id}
-                  className="text-sm font-medium text-sky-800"
-                >
+                <label className="text-sm font-medium text-sky-800">
                   {field.label} {field.optional && "(Opcional)"}
                 </label>
+
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-500">
                     {field.icon}
                   </span>
+
                   <input
                     type={field.type}
                     id={field.id}
@@ -178,14 +248,11 @@ const OrganizationRegisterForm = () => {
               </div>
             ))}
 
-            {/* Descrição */}
             <div>
-              <label
-                htmlFor="description"
-                className="text-sm font-medium text-sky-800"
-              >
+              <label className="text-sm font-medium text-sky-800">
                 Descrição/Missão
               </label>
+
               <textarea
                 id="description"
                 value={formData.description}
@@ -193,11 +260,11 @@ const OrganizationRegisterForm = () => {
                 required
                 rows="3"
                 className="w-full px-4 py-2 border border-sky-300/60 rounded-md bg-white/80 focus:ring-2 focus:ring-teal-400 outline-none"
-              ></textarea>
+              />
             </div>
           </fieldset>
 
-          {/* == Seção 2: Dados do Administrador Inicial (ORG_ADMIN) == */}
+          {/* Dados do Administrador */}
           <fieldset className="p-4 border border-teal-300/60 rounded-lg space-y-4">
             <legend className="px-2 text-lg font-semibold text-teal-700">
               Dados do Administrador Inicial
@@ -240,16 +307,15 @@ const OrganizationRegisterForm = () => {
               },
             ].map((field) => (
               <div key={field.id} className="space-y-1">
-                <label
-                  htmlFor={field.id}
-                  className="text-sm font-medium text-sky-800"
-                >
+                <label className="text-sm font-medium text-sky-800">
                   {field.label}
                 </label>
+
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-500">
                     {field.icon}
                   </span>
+
                   <input
                     type={field.type}
                     id={field.id}
@@ -262,7 +328,6 @@ const OrganizationRegisterForm = () => {
               </div>
             ))}
 
-            {/* Localização e Data de Nascimento */}
             <div className="grid grid-cols-2 gap-4">
               <input
                 type="text"
@@ -273,6 +338,7 @@ const OrganizationRegisterForm = () => {
                 required
                 className="w-full px-4 py-2 border border-sky-300/60 rounded-md bg-white/80 focus:ring-2 focus:ring-teal-400 outline-none"
               />
+
               <input
                 type="text"
                 id="adminState"
@@ -283,10 +349,10 @@ const OrganizationRegisterForm = () => {
                 className="w-full px-4 py-2 border border-sky-300/60 rounded-md bg-white/80 focus:ring-2 focus:ring-teal-400 outline-none"
               />
             </div>
+
             <input
               type="date"
               id="adminBirthDate"
-              placeholder="Data de Nascimento"
               value={formData.adminBirthDate}
               onChange={handleChange}
               required
@@ -294,18 +360,77 @@ const OrganizationRegisterForm = () => {
             />
           </fieldset>
 
-          {/* Botão de Envio */}
+          {/* NOVO: Documentação obrigatória */}
+          <fieldset className="p-4 border border-red-300/60 rounded-lg space-y-4 bg-red-50/30">
+            <legend className="px-2 text-lg font-semibold text-red-700">
+              📋 Documentação Obrigatória para Aprovação
+            </legend>
+
+            <p className="text-sm text-gray-700 font-medium">
+              Envie os documentos em PDF, JPG ou PNG com no máximo 5MB cada.
+            </p>
+
+            {[
+              {
+                id: "statutes",
+                label: "Estatuto Social",
+                description: "Documento que regulamenta a organização.",
+              },
+              {
+                id: "registrationCertificate",
+                label: "Certificado de Registro",
+                description: "Comprovante de registro no órgão competente.",
+              },
+              {
+                id: "governanceDocument",
+                label: "Documento de Governança",
+                description: "Políticas de transparência e gestão.",
+              },
+            ].map((doc) => (
+              <div
+                key={doc.id}
+                className="p-3 border border-red-200 rounded-lg bg-white/60"
+              >
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
+                  {doc.label}
+                </label>
+
+                <p className="text-xs text-gray-600 mb-2">{doc.description}</p>
+
+                <input
+                  type="file"
+                  id={doc.id}
+                  onChange={(e) => handleFileChange(e, doc.id)}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-red-400 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-500 file:text-white hover:file:bg-red-600"
+                />
+
+                {/* NOVO: feedback visual do arquivo enviado */}
+                {uploadedFiles[doc.id] && (
+                  <div className="flex items-center gap-2 mt-2 text-green-600 text-sm">
+                    <FaCheckCircle /> Arquivo enviado
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg text-xs text-yellow-800">
+              <strong>⚠️ Importante:</strong> A documentação será verificada
+              para garantir a confiabilidade da organização.
+            </div>
+          </fieldset>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-green-500 to-teal-400 text-white py-3 rounded-md font-semibold shadow-lg hover:from-green-600 hover:to-teal-500 transition-all"
+            className="w-full bg-gradient-to-r from-green-500 to-teal-400 text-white py-3 rounded-md font-semibold shadow-lg hover:from-green-600 hover:to-teal-500 transition-all disabled:opacity-50"
           >
             {loading
               ? "Enviando Solicitação..."
               : "Solicitar Cadastro e Verificação"}
           </button>
 
-          {/* Voltar */}
           <div className="text-center text-sm">
             <button
               type="button"

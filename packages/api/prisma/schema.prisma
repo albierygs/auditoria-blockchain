@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -689,7 +689,7 @@ model session {
 
   @@index([user_id])
   @@index([expires_at])
-  @@index([token(length: 255), revoked])
+  @@index([token, revoked])
 }
 
 model password_reset_token {

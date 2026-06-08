@@ -280,19 +280,19 @@ model organization {
 }
 
 model stripe_account {
-  id                  Int                   @id @default(autoincrement())
-  public_id           String                @unique @default(uuid())
-  organization        organization          @relation(fields: [organization_id], references: [public_id])
-  organization_id     String                @unique
-  stripe_account_id   String?               @unique
-  charges_enabled     Boolean               @default(false)
-  payouts_enabled     Boolean               @default(false)
-  details_submitted   Boolean               @default(false)
-  account_email       String?
-  account_name        String?
-  account_data        Json?
-  created_at          DateTime              @default(now())
-  updated_at          DateTime              @updatedAt()
+  id                Int          @id @default(autoincrement())
+  public_id         String       @unique @default(uuid())
+  organization      organization @relation(fields: [organization_id], references: [public_id])
+  organization_id   String       @unique
+  stripe_account_id String?      @unique
+  charges_enabled   Boolean      @default(false)
+  payouts_enabled   Boolean      @default(false)
+  details_submitted Boolean      @default(false)
+  account_email     String?
+  account_name      String?
+  account_data      Json?
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt()
 
   @@index([organization_id])
   @@index([stripe_account_id])
@@ -371,18 +371,18 @@ model beneficiary {
 // ========================================
 
 model donation {
-  id                    Int                   @id @default(autoincrement())
-  public_id             String                @unique @default(uuid())
-  donor                 donor                 @relation(fields: [donor_id], references: [public_id])
+  id                    Int                  @id @default(autoincrement())
+  public_id             String               @unique @default(uuid())
+  donor                 donor                @relation(fields: [donor_id], references: [public_id])
   donor_id              String
-  organization          organization          @relation(fields: [organization_id], references: [public_id])
+  organization          organization         @relation(fields: [organization_id], references: [public_id])
   organization_id       String
-  value                 Decimal               @db.Decimal(10, 2)
-  date                  DateTime              @default(now())
+  value                 Decimal              @db.Decimal(10, 2)
+  date                  DateTime             @default(now())
   payment_method        PaymentMethod
-  status                DonationStatus        @default(PENDING)
-  payment_gateway       String?               @default("STRIPE")
-  recurring_donation    recurring_donation?   @relation(fields: [recurring_donation_id], references: [public_id])
+  status                DonationStatus       @default(PENDING)
+  payment_gateway       String?              @default("STRIPE")
+  recurring_donation    recurring_donation?  @relation(fields: [recurring_donation_id], references: [public_id])
   recurring_donation_id String?
   stripe_transactions   stripe_transaction[]
 

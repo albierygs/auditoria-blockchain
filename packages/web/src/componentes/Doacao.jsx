@@ -1,40 +1,61 @@
-// src/componentes/Doacao.jsx
 import { useEffect, useState } from "react";
-import { FaArrowLeft, FaArrowRight, FaDonate } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaDonate,
+  FaCalendarAlt,
+  FaCheckCircle,
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/enviroments";
 
-// Funções auxiliares para formatação
+// Formata o valor para o padrão brasileiro: R$ 100,00
 const formatValue = (value) => {
   return `R$ ${parseFloat(value).toFixed(2).replace(".", ",")}`;
 };
 
 export default function Doacao() {
+  // Lista de doações já registradas
   const [doacoes, setDoacoes] = useState([]);
+
+  // Lista de organizações verificadas
   const [organizations, setOrganizations] = useState([]);
+
+  // Estados de carregamento e erro
   const [loadingOrg, setLoadingOrg] = useState(true);
   const [loadingDonations, setLoadingDonations] = useState(true);
   const [errorOrg, setErrorOrg] = useState(null);
+
   const navigate = useNavigate();
 
+  // Estado principal do formulário
   const [form, setForm] = useState({
     organization_id: "",
     value: "",
+    payment_method: "PIX",
+
+    // Campos usados para doação recorrente
+    is_recurring: false,
+    recurring_frequency: "MONTHLY",
+    recurring_end_date: "",
   });
 
   const TOKEN_KEY = "token";
 
+  // Ao abrir a tela, carrega doações e organizações
   useEffect(() => {
     carregarDoacoes();
     carregarOrganizacoes();
   }, []);
 
+  // Busca o token salvo no navegador
   const getToken = () => {
     return localStorage.getItem(TOKEN_KEY);
   };
 
+  // Carrega a lista de doações do usuário
   const carregarDoacoes = async () => {
     setLoadingDonations(true);
+
     const token = getToken();
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -42,6 +63,7 @@ export default function Doacao() {
       const response = await fetch(`${API_BASE_URL}/donations/`, {
         headers,
       });
+
       const data = await response.json();
 
       const lista = Array.isArray(data)
@@ -49,6 +71,7 @@ export default function Doacao() {
         : Array.isArray(data?.data)
           ? data.data
           : [];
+
       setDoacoes(lista);
     } catch (error) {
       console.log("Erro ao carregar doações:", error);
@@ -58,9 +81,11 @@ export default function Doacao() {
     }
   };
 
+  // Carrega organizações verificadas para aparecerem no select
   const carregarOrganizacoes = async () => {
     setLoadingOrg(true);
     setErrorOrg(null);
+
     const token = getToken();
 
     if (!token) {
@@ -70,7 +95,6 @@ export default function Doacao() {
     }
 
     try {
-      // Endpoint para listar organizações verificadas
       const response = await fetch(`${API_BASE_URL}/organizations/verified`, {
         headers: {
           "Content-Type": "application/json",
@@ -90,6 +114,7 @@ export default function Doacao() {
         : Array.isArray(data?.data)
           ? data.data
           : [];
+
       setOrganizations(lista);
     } catch (error) {
       console.error("Erro ao carregar organizações:", error);
@@ -100,9 +125,19 @@ export default function Doacao() {
     }
   };
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  // Atualiza o formulário.
+  // Se for checkbox, salva true/false.
+  // Se for input/select normal, salva o value.
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
 
+    setForm({
+      ...form,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  // Envia a doação para o backend
   const enviarDoacao = async (e) => {
     e.preventDefault();
 
@@ -118,10 +153,25 @@ export default function Doacao() {
       return;
     }
 
+    // Se for doação recorrente, a data final se torna obrigatória
+    if (form.is_recurring && !form.recurring_end_date) {
+      alert("Por favor, defina a data de término para doações recorrentes.");
+      return;
+    }
+
     try {
+      // Monta os dados que serão enviados para a API
       const payload = {
         organization_id: form.organization_id,
         value: Number(form.value),
+        payment_method: form.payment_method,
+
+        // Campos de recorrência
+        is_recurring: form.is_recurring,
+        recurring_frequency: form.is_recurring
+          ? form.recurring_frequency
+          : null,
+        recurring_end_date: form.is_recurring ? form.recurring_end_date : null,
       };
 
       const response = await fetch(`${API_BASE_URL}/donations`, {
@@ -140,18 +190,40 @@ export default function Doacao() {
         );
       }
 
-      const data = await response.json();
-      navigate(`/pagamento/${data.public_id}`);
+      // Atualiza a lista após registrar
+      await carregarDoacoes();
+
+      // Limpa o formulário
+      setForm({
+        organization_id: "",
+        value: "",
+        payment_method: "PIX",
+        is_recurring: false,
+        recurring_frequency: "MONTHLY",
+        recurring_end_date: "",
+      });
+
+      const tipoDoacao = form.is_recurring
+        ? `Doação recorrente (${form.recurring_frequency.toLowerCase()}) registrada com sucesso!`
+        : "Doação registrada com sucesso!";
+
+      alert(tipoDoacao);
     } catch (error) {
       console.log("Erro ao registrar doação:", error);
       alert(`Erro ao registrar doação: ${error.message}`);
     }
   };
 
+  // Define a data mínima como hoje + 1 mês
+  const getMinRecurringDate = () => {
+    const today = new Date();
+    const minDate = new Date(today.setMonth(today.getMonth() + 1));
+
+    return minDate.toISOString().split("T")[0];
+  };
+
   return (
-    // NOVO LAYOUT: Fundo gradiente
     <div className="w-full min-h-screen bg-gradient-to-br from-blue-100 via-cyan-50 to-white">
-      {/* NOVO LAYOUT: Cabeçalho fixo com botão de voltar */}
       <header className="backdrop-blur-md bg-white/70 shadow-md border-b border-cyan-100">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
           <button
@@ -160,6 +232,7 @@ export default function Doacao() {
           >
             <FaArrowLeft className="text-2xl" />
           </button>
+
           <div className="flex items-center gap-3">
             <FaDonate className="text-sky-800 text-2xl" />
             <h1 className="text-2xl font-bold text-sky-800 tracking-tight">
@@ -169,20 +242,19 @@ export default function Doacao() {
         </div>
       </header>
 
-      {/* NOVO LAYOUT: Conteúdo principal centralizado com max-width */}
       <main className="max-w-4xl mx-auto px-6 py-12">
-        {/* BOX 1: Formulário de Doação */}
         <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-xl p-8 border border-cyan-100 mb-8">
           <h2 className="text-xl font-semibold text-sky-800 mb-6">
             Preencha os dados da sua nova contribuição 🤝
           </h2>
 
           <form onSubmit={enviarDoacao} className="space-y-4">
-            {/* Seletor de Organização */}
+            {/* Organização que receberá a doação */}
             <div className="space-y-1">
               <label className="text-sm font-medium text-gray-700">
                 Organização
               </label>
+
               <select
                 name="organization_id"
                 className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-white/80"
@@ -197,21 +269,23 @@ export default function Doacao() {
                       ? "Erro ao carregar organizações"
                       : "Selecione uma organização"}
                 </option>
-                {/* Mapeamento das organizações carregadas de /api/organizations/verified */}
+
                 {organizations.map((org) => (
                   <option key={org.public_id} value={org.public_id}>
                     {org.name}
                   </option>
                 ))}
               </select>
+
               {errorOrg && <p className="text-red-500 text-sm">{errorOrg}</p>}
             </div>
 
-            {/* Valor */}
+            {/* Valor da doação */}
             <div className="space-y-1">
               <label className="text-sm font-medium text-gray-700">
                 Valor (R$)
               </label>
+
               <input
                 name="value"
                 type="number"
@@ -224,25 +298,122 @@ export default function Doacao() {
               />
             </div>
 
+            {/* Método escolhido para pagamento */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">
+                Método de Pagamento
+              </label>
 
+              <select
+                name="payment_method"
+                className="border p-3 rounded-lg w-full focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-white/80"
+                value={form.payment_method}
+                onChange={handleChange}
+              >
+                <option value="PIX">PIX</option>
+                <option value="CREDIT">Cartão de Crédito</option>
+                <option value="DEBIT">Débito</option>
+                <option value="TRANSFER">Transferência</option>
+                <option value="BANK_SLIP">Boleto</option>
+              </select>
+            </div>
 
-            {/* Botão de Envio */}
+            {/* Área responsável por ativar ou desativar doação recorrente */}
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <input
+                  type="checkbox"
+                  id="is_recurring"
+                  name="is_recurring"
+                  checked={form.is_recurring}
+                  onChange={handleChange}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+
+                <label
+                  htmlFor="is_recurring"
+                  className="text-sm font-semibold text-gray-800 flex items-center gap-2 cursor-pointer"
+                >
+                  <FaCalendarAlt /> Fazer uma doação mensal recorrente
+                </label>
+              </div>
+
+              {/* Campos que só aparecem quando a recorrência está ativa */}
+              {form.is_recurring && (
+                <div className="space-y-3 mt-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Frequência de Recorrência
+                    </label>
+
+                    <select
+                      name="recurring_frequency"
+                      className="border p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-white text-sm"
+                      value={form.recurring_frequency}
+                      onChange={handleChange}
+                    >
+                      <option value="MONTHLY">Mensal</option>
+                      <option value="QUARTERLY">Trimestral</option>
+                      <option value="YEARLY">Anual</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Data de Término (Obrigatório)
+                    </label>
+
+                    <input
+                      type="date"
+                      name="recurring_end_date"
+                      className="border p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-white text-sm"
+                      value={form.recurring_end_date}
+                      onChange={handleChange}
+                      min={getMinRecurringDate()}
+                    />
+
+                    <p className="text-xs text-gray-600 mt-1">
+                      A doação será renovada automaticamente até a data
+                      definida.
+                    </p>
+                  </div>
+
+                  {/* Resumo visual da recorrência escolhida */}
+                  <div className="bg-white p-3 rounded border border-blue-100 text-sm">
+                    <p className="text-gray-700">
+                      <FaCheckCircle className="inline text-green-500 mr-2" />
+                      <strong>Resumo:</strong> R$ {form.value || "0,00"}{" "}
+                      {form.recurring_frequency === "MONTHLY"
+                        ? "por mês"
+                        : form.recurring_frequency === "QUARTERLY"
+                          ? "a cada 3 meses"
+                          : "por ano"}{" "}
+                      até {form.recurring_end_date || "data não definida"}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-md font-semibold shadow-md hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-md font-semibold shadow-md hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={
                 !form.organization_id ||
                 !form.value ||
                 Number(form.value) <= 0 ||
-                loadingOrg
+                loadingOrg ||
+                (form.is_recurring && !form.recurring_end_date)
               }
             >
-              Prosseguir para Pagamento <FaArrowRight />
+              {form.is_recurring
+                ? "Registrar Doação Recorrente"
+                : "Registrar Doação"}
             </button>
           </form>
         </div>
 
-        {/* BOX 2: Lista de Doações Realizadas */}
+        {/* Lista das últimas doações */}
         <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-xl p-8 border border-cyan-100">
           <h2 className="text-xl font-semibold text-sky-800 mb-6">
             Doações Recentes
@@ -264,6 +435,7 @@ export default function Doacao() {
                       <p className="font-semibold text-lg text-sky-800">
                         {formatValue(d.value)}
                       </p>
+
                       <p className="text-sm text-gray-600">
                         Organização:{" "}
                         <span className="font-medium text-gray-800">
@@ -271,30 +443,20 @@ export default function Doacao() {
                         </span>
                       </p>
                     </div>
-                    {d.status === "PENDING" && (
-                      <button
-                        onClick={() => navigate(`/pagamento/${d.public_id}`)}
-                        className="px-4 py-1.5 bg-amber-500 text-white rounded-lg text-xs font-semibold shadow-sm hover:bg-amber-600 transition-colors flex-shrink-0"
-                      >
-                        Continuar Pagamento
-                      </button>
+
+                    {/* Selo exibido apenas para doações recorrentes */}
+                    {d.is_recurring && (
+                      <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+                        <FaCalendarAlt /> Recorrente
+                      </span>
                     )}
                   </div>
+
                   <div className="flex justify-between items-center text-xs mt-2">
                     <p className="text-gray-500">
-                      Status:{" "}
-                      <span
-                        className={`font-semibold px-2 py-0.5 rounded-full ${
-                          d.status === "CONFIRMED"
-                            ? "bg-green-100 text-green-700"
-                            : d.status === "PENDING"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        {d.status}
-                      </span>
+                      Status: <span className="font-medium">{d.status}</span>
                     </p>
+
                     {d.blockchain_transaction?.hash && (
                       <p className="text-cyan-600 font-mono text-xs">
                         Hash: {d.blockchain_transaction.hash.substring(0, 10)}
@@ -302,6 +464,14 @@ export default function Doacao() {
                       </p>
                     )}
                   </div>
+
+                  {/* Mostra a próxima cobrança somente se a doação for recorrente */}
+                  {d.is_recurring && (
+                    <p className="text-xs text-blue-600 mt-2">
+                      Próxima cobrança:{" "}
+                      {new Date(d.next_charge_date).toLocaleDateString("pt-BR")}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
